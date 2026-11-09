@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AdLoop · Sponsor preview</title>
+<style>
+  :root{font:16px system-ui;color:#172522;background:#f5f5f0}body{max-width:700px;margin:36px auto;padding:0 18px}h1{font-size:28px;margin-bottom:6px}.note{color:#68766f;font-size:13px;line-height:1.5}.card{background:#fff;border-radius:20px;padding:22px;margin-top:22px}label{display:block;font-size:12px;font-weight:650;margin:14px 0 6px}input,textarea{box-sizing:border-box;width:100%;padding:11px;border:1px solid #dce2dc;border-radius:10px;font:inherit}textarea{min-height:80px;resize:vertical}.grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}button{margin-top:18px;border:0;border-radius:12px;background:#d9f56d;color:#172522;font-weight:750;padding:13px 17px;font:inherit;cursor:pointer}.result{margin-top:12px;font-size:13px;color:#40534b;white-space:pre-wrap}small{color:#75817b}
+</style>
+<body>
+  <h1>Sponsor a sample campaign</h1>
+  <p class="note">Sponsors can run these campaigns alongside provider-supplied ads in the same viewer feed. This local preview models a sponsor fee and viewer share in demo credits; it does not collect money or publish an ad.</p>
+  <form class="card" id="campaign">
+    <label>Sponsor or brand</label><input name="sponsor" maxlength="160" required placeholder="Your brand">
+    <label>Ad headline</label><input name="headline" maxlength="160" required placeholder="What are you promoting?">
+    <label>Description</label><textarea name="description" maxlength="160" required placeholder="A short description"></textarea>
+    <div class="grid">
+      <div><label>Video length (seconds)</label><input name="durationSeconds" type="number" min="5" max="120" value="30" required></div>
+      <div><label>Countries (* = all)</label><input name="countries" value="*" required></div>
+      <div><label>Sponsor fee per complete view</label><input name="feeCredits" type="number" min="2" value="50" required></div>
+      <div><label>Viewer share per complete view</label><input name="rewardCredits" type="number" min="1" value="30" required></div>
+      <div><label>Total demo campaign budget</label><input name="budgetCredits" type="number" min="50" value="500" required></div>
+      <div><small>Fee must cover the viewer share. Credits are placeholders.</small></div>
+    </div>
+    <button type="submit">Create demo campaign</button>
+    <div class="result" id="result" role="status"></div>
+  </form>
+<script>
+  const form = document.querySelector('#campaign');
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const values = Object.fromEntries(new FormData(form));
+    for (const key of ['durationSeconds','feeCredits','rewardCredits','budgetCredits']) values[key] = Number(values[key]);
+    const result = document.querySelector('#result');
+    try {
+      const response = await fetch('/api/sponsor/campaigns', {method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify(values)});
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Campaign could not be created');
+      result.textContent = `${data.message}\nCampaign id: ${data.id}`;
+      form.reset();
+    } catch (error) { result.textContent = error.message; }
+  });
+</script>
+</body>
+</html>
