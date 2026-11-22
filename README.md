@@ -1,5 +1,7 @@
 # AdLoop
 
+[![Deploy F-Droid Repo](https://github.com/saurabhkundu1/AdLoop/actions/workflows/deploy-fdroid-pages.yml/badge.svg)](https://github.com/saurabhkundu1/AdLoop/actions/workflows/deploy-fdroid-pages.yml)
+
 An Android prototype for one swipeable ad feed containing both direct sponsor campaigns and provider-supplied ad placements. The publisher receives sponsor/provider revenue; the app records a demo viewer share as credits after a completed view.
 
 ## Run the local prototype
