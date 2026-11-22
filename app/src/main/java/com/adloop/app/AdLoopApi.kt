@@ -1,6 +1,7 @@
 package com.adloop.app
 
 import android.content.Context
+import androidx.core.content.edit
 import android.graphics.Color as AndroidColor
 import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.Dispatchers
@@ -55,7 +56,7 @@ data class Wallet(val balance: Int, val history: List<Earning>)
 class AdLoopApi(context: Context) {
     private val preferences = context.getSharedPreferences("adloop_demo", Context.MODE_PRIVATE)
     private val userId = preferences.getString("user_id", null) ?: UUID.randomUUID().toString().replace("-", "").also {
-        preferences.edit().putString("user_id", it).apply()
+        preferences.edit { putString("user_id", it) }
     }
     private val baseUrl = "http://10.0.2.2:8787"
 

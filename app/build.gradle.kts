@@ -10,7 +10,7 @@ android {
     defaultConfig {
         applicationId = "com.adloop.app"
         minSdk = 33
-        targetSdk = 35
+        targetSdk = 37
         versionCode = 1
         versionName = "0.1.0"
     }
@@ -25,7 +25,8 @@ android {
     }
 
     lint {
-        disable += "AndroidGradlePluginVersion"
+        warningsAsErrors = true
+        disable += listOf("AndroidGradlePluginVersion", "GradleDependency", "NewerVersionAvailable", "UseTomlInstead")
     }
 }
 

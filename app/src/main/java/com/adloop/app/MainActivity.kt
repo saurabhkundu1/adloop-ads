@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -367,7 +368,7 @@ private fun ReelCard(
     onCancel: (String) -> Unit,
     onFinished: () -> Unit,
 ) {
-    var drag by remember(index) { mutableStateOf(0f) }
+    var drag by remember(index) { mutableFloatStateOf(0f) }
     var sessionId by remember(ad.id) { mutableStateOf<String?>(null) }
     var secondsLeft by remember(ad.id) { mutableIntStateOf(ad.durationSeconds) }
     var completionError by remember(ad.id) { mutableStateOf<String?>(null) }

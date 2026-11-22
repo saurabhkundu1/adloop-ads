@@ -2,6 +2,7 @@ package com.adloop.app
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
 
 enum class AdFrequencyMode(
     val title: String,
@@ -25,13 +26,13 @@ class AdFrequencyManager(context: Context) {
     var mode: AdFrequencyMode
         get() = AdFrequencyMode.fromName(prefs.getString(KEY_MODE, AdFrequencyMode.BALANCED.name))
         set(value) {
-            prefs.edit().putString(KEY_MODE, value.name).apply()
+            prefs.edit { putString(KEY_MODE, value.name) }
         }
 
     var lastAdCompletedTimestamp: Long
         get() = prefs.getLong(KEY_LAST_COMPLETED, 0L)
         private set(value) {
-            prefs.edit().putLong(KEY_LAST_COMPLETED, value).apply()
+            prefs.edit { putLong(KEY_LAST_COMPLETED, value) }
         }
 
     fun recordAdCompleted(currentTimeMillis: Long = System.currentTimeMillis()) {
