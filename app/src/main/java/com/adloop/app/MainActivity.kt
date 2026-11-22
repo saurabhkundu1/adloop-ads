@@ -90,6 +90,8 @@ class MainActivity : Activity() {
 private fun AdLoopApp(appVisible: Boolean) {
     val context = LocalContext.current
     val api = remember(context) { AdLoopApi(context.applicationContext) }
+    val frequencyManager = remember(context) { AdFrequencyManager(context.applicationContext) }
+    var frequencyMode by remember { mutableStateOf(frequencyManager.mode) }
     val scope = rememberCoroutineScope()
     var campaigns by remember { mutableStateOf(emptyList<Campaign>()) }
     var wallet by remember { mutableStateOf(Wallet(0, emptyList())) }
@@ -146,8 +148,14 @@ private fun AdLoopApp(appVisible: Boolean) {
                     onStart = api::startView,
                     onComplete = { sessionId ->
                         val credited = api.completeView(sessionId)
+                        frequencyManager.recordAdCompleted()
                         refresh()
                         credited
+                    },
+                    frequencyMode = frequencyMode,
+                    onFrequencyChange = { mode ->
+                        frequencyManager.mode = mode
+                        frequencyMode = mode
                     },
                     onCancel = { sessionId -> scope.launch { runCatching { api.cancelView(sessionId) } } },
                     onRetry = {
@@ -196,14 +204,58 @@ private fun FeedScreen(
     onWallet: () -> Unit,
     onStart: suspend (String) -> String,
     onComplete: suspend (String) -> Int,
+    frequencyMode: AdFrequencyMode,
+    onFrequencyChange: (AdFrequencyMode) -> Unit,
     onCancel: (String) -> Unit,
     onRetry: () -> Unit,
 ) {
     var index by remember { mutableIntStateOf(0) }
+    var showFrequencyDialog by remember { mutableStateOf(false) }
     val ad = campaigns.getOrNull(index)
 
     LaunchedEffect(campaigns.size) {
         if (index >= campaigns.size) index = 0
+    }
+
+    if (showFrequencyDialog) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showFrequencyDialog = false },
+            title = { Text("Ad Pacing & Frequency", fontWeight = FontWeight.Bold, color = Ink) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Select your preferred pacing for ad reel playback and transitions:", color = Muted, fontSize = 13.sp)
+                    AdFrequencyMode.entries.forEach { mode ->
+                        val selected = mode == frequencyMode
+                        Surface(
+                            onClick = {
+                                onFrequencyChange(mode)
+                                showFrequencyDialog = false
+                            },
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (selected) Lime.copy(alpha = 0.35f) else Page,
+                            border = if (selected) androidx.compose.foundation.BorderStroke(1.5.dp, Ink) else null,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(Modifier.padding(12.dp)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(mode.title, fontWeight = FontWeight.Bold, color = Ink, fontSize = 14.sp)
+                                    if (selected) {
+                                        Spacer(Modifier.weight(1f))
+                                        Text("✓ Active", fontWeight = FontWeight.Bold, color = Ink, fontSize = 11.sp)
+                                    }
+                                }
+                                Text(mode.description, color = Muted, fontSize = 11.sp, modifier = Modifier.padding(top = 2.dp))
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(onClick = { showFrequencyDialog = false }, colors = ButtonDefaults.buttonColors(containerColor = Ink)) {
+                    Text("Done")
+                }
+            }
+        )
     }
 
     Column(
@@ -223,8 +275,24 @@ private fun FeedScreen(
                     Text("SPONSOR + PROVIDER ADS", color = Muted, fontSize = 8.sp, letterSpacing = 1.sp)
                 }
             }
-            Surface(onClick = onWallet, shape = RoundedCornerShape(50), color = White, shadowElevation = 1.dp) {
-                Text("$balance demo credits  ↗", color = Ink, fontSize = 13.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp))
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Surface(
+                    onClick = { showFrequencyDialog = true },
+                    shape = RoundedCornerShape(50),
+                    color = White,
+                    shadowElevation = 1.dp
+                ) {
+                    Text(
+                        "⚡ ${frequencyMode.title}",
+                        color = Ink,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp)
+                    )
+                }
+                Surface(onClick = onWallet, shape = RoundedCornerShape(50), color = White, shadowElevation = 1.dp) {
+                    Text("$balance demo credits  ↗", color = Ink, fontSize = 13.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp))
+                }
             }
         }
 
