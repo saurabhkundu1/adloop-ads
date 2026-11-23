@@ -44,7 +44,7 @@ class AdFrequencyManager(context: Context) {
         if (cooldown <= 0) return 0
         val last = lastAdCompletedTimestamp
         if (last <= 0L) return 0
-        val elapsedSeconds = ((currentTimeMillis - last) / 1000).toInt()
+        val elapsedSeconds = ((currentTimeMillis - last) / 1000L).coerceAtMost(cooldown.toLong()).toInt()
         return (cooldown - elapsedSeconds).coerceAtLeast(0)
     }
 

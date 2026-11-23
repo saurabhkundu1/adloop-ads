@@ -148,8 +148,8 @@ private fun AdLoopApp(appVisible: Boolean) {
                     onWallet = { tab = AppTab.Wallet },
                     onStart = api::startView,
                     onComplete = { sessionId ->
-                        val credited = api.completeView(sessionId)
                         frequencyManager.recordAdCompleted()
+                        val credited = api.completeView(sessionId)
                         refresh()
                         credited
                     },
@@ -391,6 +391,7 @@ private fun ReelCard(
             secondsLeft -= 1
         }
         delay(400)
+        if (!appVisible) return@LaunchedEffect
         try {
             onComplete(session)
             completedView = true
